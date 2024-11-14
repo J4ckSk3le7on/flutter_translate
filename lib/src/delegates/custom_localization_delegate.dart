@@ -4,16 +4,14 @@ import 'package:flutter_translate/src/services/locale_service.dart';
 import 'package:flutter_translate/src/constants/constants.dart';
 import 'package:flutter_translate/src/validators/configuration_validator.dart';
 
-class CustomLocalizationDelegate {
+class CustomLocalizationDelegate extends LocalizationsDelegate<Localization> {
   Locale? _currentLocale;
   final Locale fallbackLocale;
   final List<Locale> supportedLocales;
   final Map<Locale, String> supportedLocalesMap;
   final ITranslatePreferences? preferences;
-  LocaleChangedCallback? onLocaleChanged;
 
-  Locale get currentLocale => _currentLocale!;
-
+  // Constructor
   CustomLocalizationDelegate({
     required this.fallbackLocale,
     required this.supportedLocales,
@@ -21,6 +19,10 @@ class CustomLocalizationDelegate {
     this.preferences,
   });
 
+  // Getter para obtener el locale actual
+  Locale get currentLocale => _currentLocale!;
+
+  // Cambia el idioma de la aplicación
   Future changeLocale(Locale newLocale) async {
     var isInitializing = _currentLocale == null;
 
@@ -37,24 +39,23 @@ class CustomLocalizationDelegate {
     if (!isInitializing && preferences != null) {
       await preferences!.savePreferredLocale(locale);
     }
-
-    if (onLocaleChanged != null) {
-      await onLocaleChanged!(locale);
-    }
   }
 
+  @override
   Future<Localization> load(Locale newLocale) async {
     if (currentLocale != newLocale) {
       await changeLocale(newLocale);
     }
-
     return Localization.instance;
   }
 
+  @override
   bool isSupported(Locale? locale) => locale != null;
 
-  bool shouldReload(LocalizationsDelegate old) => true;
+  @override
+  bool shouldReload(LocalizationsDelegate<Localization> old) => true;
 
+  // Método estático para crear el delegado
   static Future<CustomLocalizationDelegate> create({
     required String fallbackLocale,
     required List<String> supportedLocales,
@@ -83,6 +84,7 @@ class CustomLocalizationDelegate {
     return delegate;
   }
 
+  // Carga las preferencias guardadas
   Future<bool> _loadPreferences() async {
     if (preferences == null) return false;
 
@@ -102,6 +104,7 @@ class CustomLocalizationDelegate {
     return false;
   }
 
+  // Carga el locale del dispositivo
   Future _loadDeviceLocale() async {
     try {
       var locale = getCurrentLocale();
